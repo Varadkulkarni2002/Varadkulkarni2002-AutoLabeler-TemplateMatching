@@ -1,231 +1,174 @@
-AutoLabeler – Template Matching Annotation Tool
+# AutoLabeler – Template Matching Annotation Tool
 
-AutoLabeler is a desktop GUI application designed to accelerate dataset annotation for Computer Vision projects using a classical Template Matching approach.
+AutoLabeler is a **desktop GUI tool** for semi-automatic dataset annotation in Computer Vision projects.
+It propagates bounding box labels from a **single reference image** to a batch of similar images using **OpenCV template matching**.
 
-Instead of manually drawing bounding boxes for every image, AutoLabeler allows you to provide one reference image + its annotation, and it automatically propagates that label across a folder of similar images.
+The tool is designed for **controlled environments** where object scale, orientation, and appearance are relatively consistent.
 
-It supports exporting annotations in YOLO, Pascal VOC (XML), and JSON (LabelMe-style) formats, making it compatible with most modern training pipelines.
+---
 
-🚀 Why AutoLabeler?
+## Project Motivation
 
-Manual annotation is:
+Manual annotation is inefficient for datasets collected from:
+- Fixed cameras
+- Industrial inspection setups
+- Assembly lines
+- Screen captures or UI datasets
 
-Time-consuming
+In such cases, deep learning-based auto-labeling is often unnecessary.
+AutoLabeler provides a **lightweight, classical CV alternative** that is fast, explainable, and easy to debug.
 
-Error-prone
+---
 
-Overkill for controlled environments
+## Key Capabilities
 
-AutoLabeler is built for real-world industrial and academic datasets where:
+- Label propagation using template matching
+- GUI-based workflow (no CLI arguments)
+- Supports common annotation formats
+- Preview detection before batch execution
+- Non-destructive processing
+- Threaded execution to keep UI responsive
 
-Camera angle is fixed
+---
 
-Object appearance is consistent
+## Supported Formats
 
-Deep learning is unnecessary or too heavy
+### Input
+- YOLO (`.txt`)
+- Pascal VOC (`.xml`)
+- JSON (LabelMe-style)
 
-Think assembly lines, inspection setups, screenshots, standardized image capture.
+### Output
+- YOLO
+- Pascal VOC (XML)
+- JSON
 
-✨ Features
-🔹 Automated Label Propagation
+---
 
-Uses OpenCV Template Matching to detect objects based on a reference crop
+## System Overview
 
-One labeled image → many labeled images
+The application follows this pipeline:
 
-🔹 Multi-Format Support
+1. Parse reference annotation file
+2. Extract bounding box from reference image
+3. Crop template from reference image
+4. Apply `cv2.matchTemplate` on target images
+5. Filter detections using confidence threshold
+6. Serialize output annotations in selected format
 
-Input formats
+---
 
-YOLO (.txt)
+## Installation
 
-Pascal VOC (.xml)
+### Requirements
+- Python 3.7+
+- pip
 
-JSON (LabelMe style)
-
-Output formats
-
-YOLO
-
-Pascal VOC (XML)
-
-JSON
-
-🔹 GUI-Based (No CLI Pain)
-
-Built with Tkinter
-
-No command-line arguments
-
-Beginner-friendly and demo-ready
-
-🔹 Real-Time Preview
-
-Preview Sample option to validate detection quality
-
-Tune confidence threshold before batch processing
-
-🔹 Non-Destructive Workflow
-
-Original images are never modified
-
-Images + labels are copied to a new output directory
-
-🔹 Responsive UI
-
-Uses threading
-
-UI remains active during long batch operations
-
-🧠 System Architecture
-
-The tool follows a classical Computer Vision pipeline:
-
-Ingestion
-
-Reads the reference label file (YOLO / XML / JSON)
-
-Extracts bounding box coordinates
-
-Template Extraction
-
-Crops the object region from the reference image
-
-Template Matching
-
-Applies cv2.matchTemplate
-
-Uses Normalized Correlation Coefficient
-
-Filtering
-
-Applies user-defined confidence threshold (0.0 – 1.0)
-
-Serialization
-
-Converts detected bounding boxes into the selected output format
-
-Handles YOLO normalization automatically
-
-🛠️ Installation
-Prerequisites
-
-Python 3.7+
-
-pip
-
-Setup
+### Setup
 
 Clone the repository:
-
+```bash
 git clone https://github.com/Varadkulkarni2002/Varadkulkarni2002-AutoLabeler-TemplateMatching.git
 cd Varadkulkarni2002-AutoLabeler-TemplateMatching
-
+```
 
 Install dependencies:
-
+```bash
 pip install opencv-python numpy Pillow
+```
 
-
-Note:
-tkinter is usually included with Python.
-On Linux, if missing:
-
+> Note: `tkinter` is bundled with most Python distributions.
+> On Linux:
+```bash
 sudo apt install python3-tk
+```
 
+---
 
-Run the application:
+## Running the Application
 
+```bash
 python autolabeller.py
+```
 
-📖 Usage Guide
-1️⃣ Reference Section
+No command-line arguments are required.
 
-Reference Image
-Select an image containing the object of interest
+---
 
-Reference Label
-Select its annotation file (.xml, .json, or .txt)
+## Usage Workflow
 
-Classes File (YOLO only)
-Required to map class names to IDs
+### 1. Reference Selection
+- Select a **reference image** containing the object
+- Select its **annotation file**
+- (YOLO only) Provide `classes.txt`
 
-2️⃣ Target Section
+### 2. Target Dataset
+- Select the directory containing unlabeled images
 
-Select the folder containing raw, unlabeled images
+### 3. Output Configuration
+- Select output directory
+- Choose annotation format
 
-3️⃣ Output Section
+### 4. Execution
+- Adjust confidence threshold (recommended: `0.8`)
+- Use **Preview Sample** to verify detection
+- Start batch auto-labeling
 
-Choose output directory
+---
 
-Select annotation format:
+## Output Structure
 
-YOLO
+```
+output_directory/
+├── images/
+│   ├── img_001.jpg
+│   └── img_002.jpg
+└── labels/
+    ├── img_001.txt
+    └── img_002.txt
+```
 
-Pascal VOC
+(Structure adapts automatically for XML / JSON outputs.)
 
-JSON
+---
 
-4️⃣ Processing
+## Limitations
 
-Adjust Score Threshold (0.8 recommended start)
+This tool uses **template matching**, not learned representations.
 
-Click Preview Sample to validate detection
+- Object scale must be similar to the reference
+- Rotation invariance is limited
+- Sensitive to major lighting changes
 
-Click Start Auto Labeling to process the full dataset
+### Recommended Use Cases<img width="1905" height="1049" alt="image" src="https://github.com/user-attachments/assets/22368523-888d-408f-8249-fee565eb0910" />
 
-⚠️ Limitations (Read This Honestly)
+- Fixed-camera datasets
+- Industrial CV pipelines
+- Dataset bootstrapping
+- Rapid annotation for POCs
 
-This tool uses Template Matching, not Deep Learning.
+Not recommended for:
+- In-the-wild datasets
+- Highly diverse object appearances
 
-Known Constraints
+---
 
-Scale Sensitivity
-Object size should be similar to the reference
+## Future Improvements
 
-Rotation Sensitivity
-Significant rotation reduces accuracy
+- Multi-scale template matching
+- Multiple reference templates per class
+- Manual review and correction interface
+- Match confidence visualization
 
-Lighting Variations
-Extreme lighting changes may affect matching
+---
 
-Ideal Use Cases
-
-Fixed camera setups
-
-Assembly lines
-
-Industrial inspection
-
-Screenshots / UI datasets
-
-Standardized data collection environments
-
-If your dataset has heavy variation → YOLO / Detectron is a better fit.
-This tool is about speed and practicality, not hype.
-
-🔮 Future Scope
-
-Planned enhancements:
-
-Multi-scale template matching
-
-Multiple reference templates per class
-
-Manual review & correction tab
-
-Heatmap-based match visualization
-
-Hybrid CV + lightweight ML approach
-
-📜 License
+## License
 
 This project is licensed under the MIT License.
-You are free to use, modify, and distribute it with attribution.
 
-👨‍💻 Author
+---
 
-Varad Kulkarni
-Applied AI / Computer Vision Developer
+## Author
 
-If this tool helped you reduce annotation time, ⭐ the repo — it genuinely helps.
+Varad Kulkarni  
+Applied AI / Computer Vision
